@@ -3,7 +3,7 @@
 LC_NUMERIC="C"
 
 function round {
-  val=$(printf %0.f\\n $1) 
+  val=$(printf %0.f\\n $1)
   echo ${val}
 }
 
@@ -41,11 +41,23 @@ function get {
 #$2 = voltage plane
 function setvol {
   outw=$(wrmsr 0x150 $(get "write"))
+  if [ $? -ne 0 ]; then
+    echo "failed to write: $outw"
+    exit 1
+  fi
 	outr=$(wrmsr 0x150 $(get "read"))
+  if [ $? -ne 0 ]; then
+    echo "failed to write: $outr"
+    exit 1
+  fi
   if [[ "$outw" -ne "" || "$outr" -ne "" ]]; then
 	  echo "wrote to register 0x150: $outw and $outr"
   fi
 	success=$(rdmsr 0x150)
+  if [ $? -ne 0 ]; then
+    echo "failed to read: $success"
+    exit 1
+  fi
 	if [ ${success^^} == ${hexparam^^} ]; then
 		echo "wrote $(get "write") successful to plane index $i"
 	else
@@ -54,8 +66,8 @@ function setvol {
 }
 # Make sure only root can run our script
 if [ "$(id -u)" != "0" ]; then
-   echo "This script must be run as root" 1>&2
-   exit 1
+  echo "This script must be run as root" 1>&2
+  exit 1
 fi
 
 
@@ -65,10 +77,10 @@ if [ ${#} -gt 0 ]; then
   #echo $voltages
   #echo ${#}
   for ((i=0; i<${size};i++ )); do
-      if ! [[ ${voltages[${i}]} =~ ^[-+]?[0-9]+\.?[0-9]*$ ]]; then
-        echo "Voltage offsets must be numbers!"
-        exit 1
-      fi
+    if ! [[ ${voltages[${i}]} =~ ^[-+]?[0-9]+\.?[0-9]*$ ]]; then
+      echo "Voltage offsets must be numbers!"
+      exit 1
+    fi
   done
 else
   if [ -r /etc/iuvolt.cfg ]; then
