@@ -59,9 +59,9 @@ function setvol {
     exit 1
   fi
 	if [ ${success^^} == ${hexparam^^} ]; then
-		echo "wrote $(get "write") successful to plane index $i"
+		echo "wrote $(get "write") successfully to plane index $i"
 	else
-		echo "wrote failed, got: $success"
+		echo "write failed, got: $success"
         exit 1
 	fi
 }
