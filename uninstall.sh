@@ -8,7 +8,4 @@ systemctl disable iuvolt.service
 rm /etc/systemd/system/iuvolt.service
 rm /usr/bin/iuvolt
 
-#Legacy
-rm /usr/lib/systemd/system-sleep/iuvolt
-
 echo 'Done.'

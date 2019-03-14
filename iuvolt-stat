@@ -1,0 +1,46 @@
+#!/bin/bash
+
+LC_NUMERIC="C"
+
+readPrefix="0x80000"
+readSuffix="1000000000"
+
+function round {
+  val=$(printf %0.f\\n $1)
+  echo ${val}
+}
+
+function calculate {
+    rval=$(round $(echo "($1 * 1.024)" | bc))
+    let "b = 0xFFE00000&(($rval&0xFFF)<<21)"
+    result=$(echo "obase=16; $b" | bc)
+    echo $result
+}
+
+#$1 = voltage plane
+function getvol {
+    outr=$(wrmsr 0x150 $readPrefix$i$readSuffix)
+    if [ $? -ne 0 ]; then
+        echo "failed to write: $outr"
+        exit 1
+    else
+        outr="0x$(rdmsr 0x150)"
+        echo "read:               $outr"
+        let "outr = ((($outr>>21)|0xFFFFF800) - 4294967296) * 1000 / 1024"
+        #printf '%x\n' $outr
+        printf "%d\n" $outr
+    fi
+}
+
+# Make sure only root can run our script
+if [ "$(id -u)" != "0" ]; then
+  echo "This script must be run as root" 1>&2
+  exit 1
+fi
+
+size=${#voltages[@]}
+for ((i=0; i<5; i++ ));
+do
+  getvol $i
+done
+
